@@ -107,9 +107,13 @@ def _assert_callable_signatures_match(habitat_module, proxy_module, module_name)
                 proxy_sig = inspect.signature(proxy_attr)
 
                 if habitat_sig != proxy_sig:
-                    mismatches.append(
-                        f"{symbol_name}: habitat{habitat_sig} != proxy{proxy_sig}"
-                    )
+                    # Special case: dataclass signatures may differ only in default class references
+                    # (e.g., habitat.HabitatEnvironment vs proxy.HabitatEnvironment)
+                    # Check if they match structurally (param names, types, annotations)
+                    if not _signatures_match_structurally(habitat_sig, proxy_sig, module_name):
+                        mismatches.append(
+                            f"{symbol_name}: habitat{habitat_sig} != proxy{proxy_sig}"
+                        )
             except (ValueError, TypeError):
                 pass
 
@@ -125,6 +129,60 @@ def _assert_callable_signatures_match(habitat_module, proxy_module, module_name)
     assert mismatches == [], (
         f"{module_name} signature mismatches found:\n" + "\n".join(mismatches)
     )
+
+
+def _signatures_match_structurally(habitat_sig, proxy_sig, module_name):
+    """Check if two signatures match structurally, allowing parallel class defaults.
+
+    This handles cases where dataclass default values reference parallel classes
+    (e.g., habitat.HabitatEnvironment vs proxy.HabitatEnvironment).
+    """
+    # Compare parameters
+    h_params = list(habitat_sig.parameters.values())
+    p_params = list(proxy_sig.parameters.values())
+
+    if len(h_params) != len(p_params):
+        return False
+
+    for h_param, p_param in zip(h_params, p_params):
+        # Check parameter name
+        if h_param.name != p_param.name:
+            return False
+
+        # Check annotation (type hint)
+        if h_param.annotation != p_param.annotation:
+            return False
+
+        # Check kind (POSITIONAL_ONLY, POSITIONAL_OR_KEYWORD, etc.)
+        if h_param.kind != p_param.kind:
+            return False
+
+        # For defaults, allow parallel class references
+        h_default = h_param.default
+        p_default = p_param.default
+
+        if h_default is inspect.Parameter.empty and p_default is inspect.Parameter.empty:
+            continue
+
+        if h_default is inspect.Parameter.empty or p_default is inspect.Parameter.empty:
+            return False
+
+        # If defaults are classes with same name from parallel modules, accept
+        if (inspect.isclass(h_default) and inspect.isclass(p_default) and
+            h_default.__name__ == p_default.__name__ and
+            'habitat.environment' in getattr(h_default, '__module__', '') and
+            'habitat_proxy.environment' in getattr(p_default, '__module__', '')):
+            continue
+
+        # For other cases, defaults must match exactly
+        if h_default != p_default:
+            return False
+
+    # Check return annotation
+    if habitat_sig.return_annotation != proxy_sig.return_annotation:
+        return False
+
+    return True
 
 
 def _check_class_methods(habitat_class, proxy_class, class_name, mismatches, missing_callables):
