@@ -8,3 +8,9 @@
 # license that can be found in the LICENSE file or at
 # https://opensource.org/licenses/MIT.
 
+# Mirror habitat package-level exports by re-exporting from proxy submodules
+from .actions import *
+from .actuator import *
+from .agents import *
+from .sensors import *
+from .simulator import *
