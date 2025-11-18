@@ -45,50 +45,56 @@ class HabitatActuatorRequirements(Protocol):
 
 
 class HabitatActuator(HabitatActuatorRequirements):
+    """Proxy for habitat actuator - delegates to habitat implementation."""
+
     def action_name(self, action: Action) -> str:
-        return ""
+        # Delegate to habitat actuator logic
+        return f"{action.agent_id}.{action.name}"
 
     def to_habitat(self, action: Action) -> tuple[Agent, ActuationSpec, str]:
-        raise NotImplementedError
+        # This method is part of actuator logic that depends on simulator state
+        # The actual implementation will be in the simulator that inherits this
+        raise NotImplementedError("to_habitat must be implemented by simulator")
 
     def actuate_look_down(self, action: LookDown) -> None:
-        pass
+        raise NotImplementedError("Must be implemented by subclass with delegate")
 
     def actuate_look_up(self, action: LookUp) -> None:
-        pass
+        raise NotImplementedError("Must be implemented by subclass with delegate")
 
     def actuate_move_forward(self, action: MoveForward) -> None:
-        pass
+        raise NotImplementedError("Must be implemented by subclass with delegate")
 
     def actuate_move_tangentially(self, action: MoveTangentially) -> None:
-        pass
+        raise NotImplementedError("Must be implemented by subclass with delegate")
 
     def actuate_orient_horizontal(self, action: OrientHorizontal) -> None:
-        pass
+        raise NotImplementedError("Must be implemented by subclass with delegate")
 
     def actuate_orient_vertical(self, action: OrientVertical) -> None:
-        pass
+        raise NotImplementedError("Must be implemented by subclass with delegate")
 
     def actuate_set_agent_pitch(self, action: SetAgentPitch) -> None:
-        pass
+        raise NotImplementedError("Must be implemented by subclass with delegate")
 
     def actuate_set_agent_pose(self, action: SetAgentPose) -> None:
-        pass
+        raise NotImplementedError("Must be implemented by subclass with delegate")
 
     def actuate_set_sensor_pitch(self, action: SetSensorPitch) -> None:
-        pass
+        raise NotImplementedError("Must be implemented by subclass with delegate")
 
     def actuate_set_sensor_pose(self, action: SetSensorPose) -> None:
-        pass
+        raise NotImplementedError("Must be implemented by subclass with delegate")
 
     def actuate_set_sensor_rotation(self, action: SetSensorRotation) -> None:
-        pass
+        raise NotImplementedError("Must be implemented by subclass with delegate")
 
     def actuate_set_yaw(self, action: SetYaw) -> None:
-        pass
+        raise NotImplementedError("Must be implemented by subclass with delegate")
 
     def actuate_turn_left(self, action: TurnLeft) -> None:
-        pass
+        raise NotImplementedError("Must be implemented by subclass with delegate")
 
     def actuate_turn_right(self, action: TurnRight) -> None:
-        pass
+        raise NotImplementedError("Must be implemented by subclass with delegate")
+

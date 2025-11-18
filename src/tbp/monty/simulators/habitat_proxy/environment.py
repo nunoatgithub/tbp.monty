@@ -76,31 +76,62 @@ class HabitatEnvironment:
         seed: int = 42,
         data_path: str | None = None,
     ):
-        pass
+        # Translate proxy AgentConfig to habitat AgentConfig
+        import tbp.monty.simulators.habitat as _habitat
+        from dataclasses import asdict, is_dataclass
+
+        habitat_agents = []
+        for config in agents:
+            cfg_dict = asdict(config) if is_dataclass(config) else config
+            agent_type = cfg_dict["agent_type"]
+            args = cfg_dict["agent_args"]
+            if is_dataclass(args):
+                args = asdict(args)
+
+            # Map proxy agent class to habitat agent class
+            agent_type_name = agent_type.__name__
+            habitat_agent_type = getattr(_habitat, agent_type_name)
+
+            habitat_agent_config = _habitat.environment.AgentConfig(
+                agent_type=habitat_agent_type,
+                agent_args=args
+            )
+            habitat_agents.append(habitat_agent_config)
+
+        # Create delegate
+        self._delegate = _habitat_environment.HabitatEnvironment(
+            agents=habitat_agents,
+            objects=objects,
+            scene_id=scene_id,
+            seed=seed,
+            data_path=data_path,
+        )
 
     def add_object(
         self,
         name: str,
-        position=(0.0, 0.0, 0.0),
-        rotation=(1.0, 0.0, 0.0, 0.0),
-        scale=(1.0, 1.0, 1.0),
-        semantic_id=None,
-        primary_target_object=None,
-    ):
-        return None
+        position: VectorXYZ = (0.0, 0.0, 0.0),
+        rotation: QuaternionWXYZ = (1.0, 0.0, 0.0, 0.0),
+        scale: VectorXYZ = (1.0, 1.0, 1.0),
+        semantic_id: SemanticID | None = None,
+        primary_target_object: ObjectID | None = None,
+    ) -> ObjectID:
+        return self._delegate.add_object(
+            name, position, rotation, scale, semantic_id, primary_target_object
+        )
 
-    def step(self, actions: Sequence):
-        return {}
+    def step(self, actions: Sequence[Action]) -> dict[str, dict]:
+        return self._delegate.step(actions)
 
-    def remove_all_objects(self):
-        pass
+    def remove_all_objects(self) -> None:
+        return self._delegate.remove_all_objects()
 
     def reset(self):
-        return {}
+        return self._delegate.reset()
 
-    def close(self):
-        pass
+    def close(self) -> None:
+        return self._delegate.close()
 
     def get_state(self):
-        return {}
+        return self._delegate.get_state()
 

@@ -31,6 +31,8 @@ Size = Tuple[int, int]
 
 
 class HabitatAgent:
+    """Proxy for HabitatAgent - delegates to habitat implementation."""
+
     def __init__(
         self,
         agent_id: AgentID | None,
@@ -38,28 +40,29 @@ class HabitatAgent:
         rotation: Quaternion = (1.0, 0.0, 0.0, 0.0),
         height: float = 0.0,
     ):
-        pass
+        self._delegate = _habitat_agents.HabitatAgent(
+            agent_id, position, rotation, height
+        )
+        # Copy delegate attributes to self for transparent access
+        self.agent_id = self._delegate.agent_id
+        self.position = self._delegate.position
+        self.rotation = self._delegate.rotation
+        self.height = self._delegate.height
+        self.sensors = self._delegate.sensors
 
     def get_spec(self) -> AgentConfiguration:
-        return None
+        return self._delegate.get_spec()
 
     def initialize(self, simulator):
-        pass
+        return self._delegate.initialize(simulator)
 
     def process_observations(self, agent_obs) -> dict:
-        return {}
-
-
-def action_space(
-    action_space_type: ActionSpaceName,
-    agent_id: str,
-    translation_step: float,
-    rotation_step: float,
-) -> dict[str, dict]:
-    return {}
+        return self._delegate.process_observations(agent_obs)
 
 
 class MultiSensorAgent(HabitatAgent):
+    """Proxy for MultiSensorAgent - delegates to habitat implementation."""
+
     def __init__(
         self,
         agent_id: AgentID | None,
@@ -76,16 +79,38 @@ class MultiSensorAgent(HabitatAgent):
         zooms: tuple[float] = (1.0,),
         semantics: tuple[bool] = (False,),
     ):
-        pass
+        # Don't call super().__init__ - create delegate directly
+        self._delegate = _habitat_agents.MultiSensorAgent(
+            agent_id, sensor_ids, position, rotation, height,
+            rotation_step, translation_step, action_space_type,
+            resolutions, positions, rotations, zooms, semantics
+        )
+        # Copy delegate attributes
+        self.agent_id = self._delegate.agent_id
+        self.position = self._delegate.position
+        self.rotation = self._delegate.rotation
+        self.height = self._delegate.height
+        self.sensors = self._delegate.sensors
+        self.sensor_ids = self._delegate.sensor_ids
+        self.rotation_step = self._delegate.rotation_step
+        self.translation_step = self._delegate.translation_step
+        self.action_space_type = self._delegate.action_space_type
+        self.resolutions = self._delegate.resolutions
+        self.positions = self._delegate.positions
+        self.rotations = self._delegate.rotations
+        self.zooms = self._delegate.zooms
+        self.semantics = self._delegate.semantics
 
     def get_spec(self):
-        return None
+        return self._delegate.get_spec()
 
     def initialize(self, simulator):
-        pass
+        return self._delegate.initialize(simulator)
 
 
 class SingleSensorAgent(HabitatAgent):
+    """Proxy for SingleSensorAgent - delegates to habitat implementation."""
+
     def __init__(
         self,
         agent_id: AgentID | None,
@@ -101,11 +126,22 @@ class SingleSensorAgent(HabitatAgent):
         translation_step: float = 0.0,
         action_space_type: ActionSpaceName = "distant_agent",
     ):
-        pass
+        # Don't call super().__init__ - create delegate directly
+        self._delegate = _habitat_agents.SingleSensorAgent(
+            agent_id, sensor_id, agent_position, sensor_position, rotation,
+            height, resolution, zoom, semantic, rotation_step, translation_step,
+            action_space_type
+        )
+        # Copy delegate attributes
+        self.agent_id = self._delegate.agent_id
+        self.position = self._delegate.position
+        self.rotation = self._delegate.rotation
+        self.height = self._delegate.height
+        self.sensors = self._delegate.sensors
 
     def get_spec(self):
-        return None
+        return self._delegate.get_spec()
 
     def initialize(self, simulator):
-        pass
+        return self._delegate.initialize(simulator)
 
