@@ -21,12 +21,8 @@ from tbp.monty.frameworks.environments.embodied_environment import (
     VectorXYZ,
 )
 from tbp.monty.frameworks.utils.dataclass_utils import create_dataclass_args
-from tbp.monty.simulators.habitat import (
-    HabitatAgent,
-    HabitatSim,
-    MultiSensorAgent,
-    SingleSensorAgent,
-)
+from .agents import HabitatAgent, MultiSensorAgent, SingleSensorAgent
+from .simulator import HabitatSim
 
 __all__ = [
     "AgentConfig",
@@ -88,12 +84,12 @@ class HabitatEnvironment(EmbodiedEnvironment):
     """
 
     def __init__(
-        self,
-        agents: list[dict | AgentConfig],
-        objects: list[dict | ObjectConfig] | None = None,
-        scene_id: str | None = None,
-        seed: int = 42,
-        data_path: str | None = None,
+            self,
+            agents: list[dict | AgentConfig],
+            objects: list[dict | ObjectConfig] | None = None,
+            scene_id: str | None = None,
+            seed: int = 42,
+            data_path: str | None = None,
     ):
         super().__init__()
         self._agents = []
@@ -119,13 +115,13 @@ class HabitatEnvironment(EmbodiedEnvironment):
                 self._env.add_object(**obj_dict)
 
     def add_object(
-        self,
-        name: str,
-        position: VectorXYZ = (0.0, 0.0, 0.0),
-        rotation: QuaternionWXYZ = (1.0, 0.0, 0.0, 0.0),
-        scale: VectorXYZ = (1.0, 1.0, 1.0),
-        semantic_id: SemanticID | None = None,
-        primary_target_object: ObjectID | None = None,
+            self,
+            name: str,
+            position: VectorXYZ = (0.0, 0.0, 0.0),
+            rotation: QuaternionWXYZ = (1.0, 0.0, 0.0, 0.0),
+            scale: VectorXYZ = (1.0, 1.0, 1.0),
+            semantic_id: SemanticID | None = None,
+            primary_target_object: ObjectID | None = None,
     ) -> ObjectID:
         return self._env.add_object(
             name,

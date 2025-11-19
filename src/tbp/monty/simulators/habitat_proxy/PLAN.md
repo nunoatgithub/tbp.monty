@@ -36,6 +36,7 @@ This plan outlines the implementation of `habitat_proxy` as a sibling package to
 - Add TYPE_CHECKING block to guide type checkers to original habitat package
 
 **Pattern:**
+
 ```python
 from .actions import *
 from .actuator import *
@@ -46,8 +47,9 @@ from .environment import *
 from .configs import *
 
 from typing import TYPE_CHECKING
+
 if TYPE_CHECKING:
-    from tbp.monty.simulators.habitat import *
+    from tbp.monty.simulators.habitat_impl import *
 ```
 
 **Deliverable:** Package __init__.py that mirrors habitat's exports

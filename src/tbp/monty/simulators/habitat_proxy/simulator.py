@@ -41,7 +41,7 @@ from tbp.monty.frameworks.actions.actions import (
     TurnRight,
 )
 from habitat_sim import Agent, ActuationSpec
-from tbp.monty.simulators.habitat import simulator as _habitat_simulator
+from tbp.monty.simulators.habitat_impl import simulator as _habitat_simulator
 from tbp.monty.simulators.habitat_proxy.actuator import HabitatActuator
 
 __all__ = [
@@ -64,7 +64,7 @@ class HabitatSim(HabitatActuator):
         data_path=None,
     ):
         # Map proxy agents to habitat agents
-        import tbp.monty.simulators.habitat as _habitat
+        import tbp.monty.simulators.habitat_impl as _habitat
 
         habitat_agents = []
         if agents:

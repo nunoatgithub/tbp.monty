@@ -189,8 +189,9 @@ class RGBDSensorConfig(SensorConfig):
 ### Module-Level Imports
 
 All proxy modules use **eager imports** at module top:
+
 ```python
-from tbp.monty.simulators.habitat import <module> as _habitat_<module>
+from tbp.monty.simulators.habitat_impl import < module > as _habitat_ < module >
 ```
 
 **Rationale:** Preserves habitat's import chain and side effects (e.g., action registration in habitat-sim).

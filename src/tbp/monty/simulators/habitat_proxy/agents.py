@@ -10,13 +10,11 @@
 
 from __future__ import annotations
 
-from typing import Tuple
-from typing_extensions import Literal
-
+from habitat_sim import ActionSpec
 from habitat_sim.agent import AgentConfiguration
 
 from tbp.monty.frameworks.agents import AgentID
-from tbp.monty.simulators.habitat import agents as _habitat_agents
+from tbp.monty.simulators.habitat_impl import agents as _habitat_impl_agents
 
 __all__ = [
     "HabitatAgent",
@@ -24,31 +22,34 @@ __all__ = [
     "SingleSensorAgent",
 ]
 
-ActionSpaceName = Literal["absolute_only", "distant_agent", "surface_agent"]
-Vector3 = Tuple[float, float, float]
-Quaternion = Tuple[float, float, float, float]
-Size = Tuple[int, int]
+ActionSpaceName = _habitat_impl_agents.ActionSpaceName
+Vector3 = _habitat_impl_agents.Vector3
+Quaternion = _habitat_impl_agents.Quaternion
+Size = _habitat_impl_agents.Size
 
 
 class HabitatAgent:
     """Proxy for HabitatAgent - delegates to habitat implementation."""
 
     def __init__(
-        self,
-        agent_id: AgentID | None,
-        position: Vector3 = (0.0, 1.5, 0.0),
-        rotation: Quaternion = (1.0, 0.0, 0.0, 0.0),
-        height: float = 0.0,
+            self,
+            agent_id: AgentID | None,
+            position: Vector3 = (0.0, 1.5, 0.0),
+            rotation: Quaternion = (1.0, 0.0, 0.0, 0.0),
+            height: float = 0.0,
     ):
-        self._delegate = _habitat_agents.HabitatAgent(
+        self._delegate = _habitat_impl_agents.HabitatAgent(
             agent_id, position, rotation, height
         )
-        # Copy delegate attributes to self for transparent access
-        self.agent_id = self._delegate.agent_id
-        self.position = self._delegate.position
-        self.rotation = self._delegate.rotation
-        self.height = self._delegate.height
-        self.sensors = self._delegate.sensors
+
+    def __getattr__(self, name):
+        return self._delegate.__getattribute__(name)
+
+    @classmethod
+    def _from_delegate(cls, delegate_agent: _habitat_impl_agents.HabitatAgent) -> HabitatAgent:
+        instance = cls.__new__(cls)
+        instance._delegate = delegate_agent
+        return instance
 
     def get_spec(self) -> AgentConfiguration:
         return self._delegate.get_spec()
@@ -60,46 +61,44 @@ class HabitatAgent:
         return self._delegate.process_observations(agent_obs)
 
 
+def action_space(
+        action_space_type: ActionSpaceName,
+        agent_id: str,
+        translation_step: float,
+        rotation_step: float,
+) -> dict[str, ActionSpec]:
+    """Proxy for action_space function - delegates to habitat implementation."""
+    return _habitat_impl_agents.action_space(
+        action_space_type, agent_id, translation_step, rotation_step
+    )
+
+
 class MultiSensorAgent(HabitatAgent):
     """Proxy for MultiSensorAgent - delegates to habitat implementation."""
 
     def __init__(
-        self,
-        agent_id: AgentID | None,
-        sensor_ids: tuple[str],
-        position: Vector3 = (0.0, 1.5, 0.0),
-        rotation: Quaternion = (1.0, 0.0, 0.0, 0.0),
-        height: float = 0.0,
-        rotation_step: float = 0.0,
-        translation_step: float = 0.0,
-        action_space_type: ActionSpaceName = "distant_agent",
-        resolutions: tuple[Size] = ((16, 16),),
-        positions: tuple[Vector3] = ((0.0, 0.0, 0.0),),
-        rotations: tuple[Quaternion] = ((1.0, 0.0, 0.0, 0.0),),
-        zooms: tuple[float] = (1.0,),
-        semantics: tuple[bool] = (False,),
+            self,
+            agent_id: AgentID | None,
+            sensor_ids: tuple[str],
+            position: Vector3 = (0.0, 1.5, 0.0),
+            rotation: Quaternion = (1.0, 0.0, 0.0, 0.0),
+            height: float = 0.0,
+            rotation_step: float = 0.0,
+            translation_step: float = 0.0,
+            action_space_type: ActionSpaceName = "distant_agent",
+            resolutions: tuple[Size] = ((16, 16),),
+            positions: tuple[Vector3] = ((0.0, 0.0, 0.0),),
+            rotations: tuple[Quaternion] = ((1.0, 0.0, 0.0, 0.0),),
+            zooms: tuple[float] = (1.0,),
+            semantics: tuple[bool] = (False,),
     ):
         # Don't call super().__init__ - create delegate directly
-        self._delegate = _habitat_agents.MultiSensorAgent(
+        self._delegate = _habitat_impl_agents.MultiSensorAgent(
             agent_id, sensor_ids, position, rotation, height,
             rotation_step, translation_step, action_space_type,
             resolutions, positions, rotations, zooms, semantics
         )
-        # Copy delegate attributes
-        self.agent_id = self._delegate.agent_id
-        self.position = self._delegate.position
-        self.rotation = self._delegate.rotation
-        self.height = self._delegate.height
-        self.sensors = self._delegate.sensors
-        self.sensor_ids = self._delegate.sensor_ids
-        self.rotation_step = self._delegate.rotation_step
-        self.translation_step = self._delegate.translation_step
-        self.action_space_type = self._delegate.action_space_type
-        self.resolutions = self._delegate.resolutions
-        self.positions = self._delegate.positions
-        self.rotations = self._delegate.rotations
-        self.zooms = self._delegate.zooms
-        self.semantics = self._delegate.semantics
+
 
     def get_spec(self):
         return self._delegate.get_spec()
@@ -112,36 +111,29 @@ class SingleSensorAgent(HabitatAgent):
     """Proxy for SingleSensorAgent - delegates to habitat implementation."""
 
     def __init__(
-        self,
-        agent_id: AgentID | None,
-        sensor_id: str,
-        agent_position: Vector3 = (0.0, 1.5, 0.0),
-        sensor_position: Vector3 = (0.0, 0.0, 0.0),
-        rotation: Quaternion = (1.0, 0.0, 0.0, 0.0),
-        height: float = 0.0,
-        resolution: Size = (16, 16),
-        zoom: float = 1.0,
-        semantic: bool = False,
-        rotation_step: float = 0.0,
-        translation_step: float = 0.0,
-        action_space_type: ActionSpaceName = "distant_agent",
+            self,
+            agent_id: AgentID | None,
+            sensor_id: str,
+            agent_position: Vector3 = (0.0, 1.5, 0.0),
+            sensor_position: Vector3 = (0.0, 0.0, 0.0),
+            rotation: Quaternion = (1.0, 0.0, 0.0, 0.0),
+            height: float = 0.0,
+            resolution: Size = (16, 16),
+            zoom: float = 1.0,
+            semantic: bool = False,
+            rotation_step: float = 0.0,
+            translation_step: float = 0.0,
+            action_space_type: ActionSpaceName = "distant_agent",
     ):
         # Don't call super().__init__ - create delegate directly
-        self._delegate = _habitat_agents.SingleSensorAgent(
+        self._delegate = _habitat_impl_agents.SingleSensorAgent(
             agent_id, sensor_id, agent_position, sensor_position, rotation,
             height, resolution, zoom, semantic, rotation_step, translation_step,
             action_space_type
         )
-        # Copy delegate attributes
-        self.agent_id = self._delegate.agent_id
-        self.position = self._delegate.position
-        self.rotation = self._delegate.rotation
-        self.height = self._delegate.height
-        self.sensors = self._delegate.sensors
 
     def get_spec(self):
         return self._delegate.get_spec()
 
     def initialize(self, simulator):
         return self._delegate.initialize(simulator)
-

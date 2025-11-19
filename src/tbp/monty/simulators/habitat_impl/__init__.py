@@ -8,15 +8,8 @@
 # license that can be found in the LICENSE file or at
 # https://opensource.org/licenses/MIT.
 
-
-import sys
-import os
-
-USE_PROXY = os.getenv("USE_HABITAT_PROXY", "false").lower() == "true"
-
-if USE_PROXY:
-    from .. import habitat_proxy
-    sys.modules[__name__] = habitat_proxy
-else:
-    from .. import habitat_impl
-    sys.modules[__name__] = habitat_impl
+from .actions import *
+from .actuator import *
+from .agents import *
+from .sensors import *
+from .simulator import *

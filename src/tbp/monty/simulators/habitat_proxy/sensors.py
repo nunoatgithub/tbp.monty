@@ -16,7 +16,7 @@ from typing import Tuple
 
 from habitat_sim.sensor import SensorSpec
 
-from tbp.monty.simulators.habitat import sensors as _habitat_sensors
+from tbp.monty.simulators.habitat_impl import sensors as _habitat_impl_sensors
 
 __all__ = [
     "RGBDSensorConfig",
@@ -24,9 +24,9 @@ __all__ = [
     "SensorConfig",
 ]
 
-Vector3 = Tuple[float, float, float]
-Quaternion = Tuple[float, float, float, float]
-Size = Tuple[int, int]
+Vector3 = _habitat_impl_sensors.Vector3
+Quaternion = _habitat_impl_sensors.Quaternion
+Size = _habitat_impl_sensors.Size
 
 
 @dataclass(frozen=True)
@@ -38,7 +38,7 @@ class SensorConfig:
 
     def get_specs(self) -> list[SensorSpec]:
         # Create habitat sensor config and delegate
-        habitat_sensor = _habitat_sensors.SensorConfig(
+        habitat_sensor = _habitat_impl_sensors.SensorConfig(
             sensor_id=self.sensor_id,
             position=self.position,
             rotation=self.rotation
@@ -47,7 +47,7 @@ class SensorConfig:
 
     def process_observations(self, sensor_obs) -> dict:
         # Create habitat sensor config and delegate
-        habitat_sensor = _habitat_sensors.SensorConfig(
+        habitat_sensor = _habitat_impl_sensors.SensorConfig(
             sensor_id=self.sensor_id,
             position=self.position,
             rotation=self.rotation
@@ -63,7 +63,7 @@ class RGBDSensorConfig(SensorConfig):
 
     def get_specs(self) -> list[SensorSpec]:
         # Create habitat sensor config and delegate
-        habitat_sensor = _habitat_sensors.RGBDSensorConfig(
+        habitat_sensor = _habitat_impl_sensors.RGBDSensorConfig(
             sensor_id=self.sensor_id,
             position=self.position,
             rotation=self.rotation,
@@ -81,7 +81,7 @@ class SemanticSensorConfig(SensorConfig):
 
     def get_specs(self) -> list[SensorSpec]:
         # Create habitat sensor config and delegate
-        habitat_sensor = _habitat_sensors.SemanticSensorConfig(
+        habitat_sensor = _habitat_impl_sensors.SemanticSensorConfig(
             sensor_id=self.sensor_id,
             position=self.position,
             rotation=self.rotation,
@@ -89,4 +89,3 @@ class SemanticSensorConfig(SensorConfig):
             zoom=self.zoom
         )
         return habitat_sensor.get_specs()
-

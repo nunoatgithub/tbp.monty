@@ -45,8 +45,8 @@ from tbp.monty.frameworks.actions.actions import (
 )
 from tbp.monty.frameworks.agents import AgentID
 from tbp.monty.simulators import resources
-from tbp.monty.simulators.habitat.actuator import HabitatActuator
-from tbp.monty.simulators.habitat.agents import HabitatAgent
+from .actuator import HabitatActuator
+from .agents import HabitatAgent
 
 __all__ = [
     "PRIMITIVE_OBJECT_TYPES",

@@ -30,12 +30,8 @@ from tbp.monty.frameworks.environment_utils.transforms import (
     DepthTo3DLocations,
     MissingToMaxDepth,
 )
-from tbp.monty.simulators.habitat import MultiSensorAgent, SingleSensorAgent
-from tbp.monty.simulators.habitat.environment import (
-    AgentConfig,
-    HabitatEnvironment,
-    ObjectConfig,
-)
+from .agents import MultiSensorAgent, SingleSensorAgent
+from .environment import AgentConfig, HabitatEnvironment, ObjectConfig
 
 __all__ = [
     "EnvInitArgs",

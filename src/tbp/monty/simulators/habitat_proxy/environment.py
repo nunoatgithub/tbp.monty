@@ -22,13 +22,10 @@ from tbp.monty.frameworks.environments.embodied_environment import (
     VectorXYZ,
 )
 from tbp.monty.frameworks.utils.dataclass_utils import create_dataclass_args
-from tbp.monty.simulators.habitat import environment as _habitat_environment
-from tbp.monty.simulators.habitat_proxy.agents import (
-    HabitatAgent,
-    MultiSensorAgent,
-    SingleSensorAgent,
-)
-from tbp.monty.simulators.habitat_proxy.simulator import HabitatSim
+from tbp.monty.simulators.habitat_impl import environment as _habitat_impl_environment
+from .agents import HabitatAgent, MultiSensorAgent, SingleSensorAgent
+from .simulator import HabitatSim
+
 from tbp.monty.simulators.simulator import Simulator
 
 __all__ = [
@@ -67,7 +64,7 @@ class AgentConfig:
     agent_args: dict | type[HabitatAgentArgs]
 
 
-class HabitatEnvironment:
+class HabitatEnvironment(EmbodiedEnvironment):
     def __init__(
         self,
         agents: list[dict | AgentConfig],
@@ -77,7 +74,7 @@ class HabitatEnvironment:
         data_path: str | None = None,
     ):
         # Translate proxy AgentConfig to habitat AgentConfig
-        import tbp.monty.simulators.habitat as _habitat
+        import tbp.monty.simulators.habitat_impl as _habitat
         from dataclasses import asdict, is_dataclass
 
         habitat_agents = []
@@ -99,13 +96,19 @@ class HabitatEnvironment:
             habitat_agents.append(habitat_agent_config)
 
         # Create delegate
-        self._delegate = _habitat_environment.HabitatEnvironment(
+        self._delegate = _habitat_impl_environment.HabitatEnvironment(
             agents=habitat_agents,
             objects=objects,
             scene_id=scene_id,
             seed=seed,
             data_path=data_path,
         )
+
+        self._agents = [HabitatAgent._from_delegate(a) for a in habitat_agents]
+        self._objects = []
+
+    def __getattr__(self, name):
+        return self._delegate.__getattribute__(name)
 
     def add_object(
         self,
@@ -134,4 +137,3 @@ class HabitatEnvironment:
 
     def get_state(self):
         return self._delegate.get_state()
-
