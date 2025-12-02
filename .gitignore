@@ -144,3 +144,4 @@ Session.vim
 
 # hydra
 outputs/
+test_ipc_basic.py

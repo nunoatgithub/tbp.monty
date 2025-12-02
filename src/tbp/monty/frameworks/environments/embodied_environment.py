@@ -10,36 +10,44 @@
 from __future__ import annotations
 
 import abc
-from dataclasses import dataclass
-from typing import Any, NewType, Sequence, Tuple
+import collections.abc
+from typing import NewType, Tuple
+
+from typing_extensions import deprecated
 
 from tbp.monty.frameworks.actions.actions import Action
+from tbp.monty.frameworks.models.abstract_monty_classes import Observations
+from tbp.monty.frameworks.models.motor_system_state import ProprioceptiveState
 
 __all__ = [
+    "ActionSpace",
     "EmbodiedEnvironment",
+    "EulerAnglesXYZ",
     "ObjectID",
-    "ObjectInfo",
     "QuaternionWXYZ",
+    "QuaternionXYZW",
     "SemanticID",
     "VectorXYZ",
 ]
 
 ObjectID = NewType("ObjectID", int)
 """Unique identifier for an object in the environment."""
-
 SemanticID = NewType("SemanticID", int)
 """Unique identifier for an object's semantic class."""
+EulerAnglesXYZ = NewType("EulerAnglesXYZ", Tuple[float, float, float])
+VectorXYZ = NewType("VectorXYZ", Tuple[float, float, float])
+QuaternionWXYZ = NewType("QuaternionWXYZ", Tuple[float, float, float, float])
+QuaternionXYZW = NewType("QuaternionXYZW", Tuple[float, float, float, float])
 
-VectorXYZ = Tuple[float, float, float]
-QuaternionWXYZ = Tuple[float, float, float, float]
 
+@deprecated("Use `ActionSampler` instead.")
+class ActionSpace(collections.abc.Container):
+    """Represents the environment action space."""
 
-@dataclass
-class ObjectInfo:
-    """Contains the identifying information of an object created in the environment."""
-
-    object_id: ObjectID
-    semantic_id: SemanticID | None
+    @abc.abstractmethod
+    def sample(self):
+        """Sample the action space returning a random action."""
+        pass
 
 
 class EmbodiedEnvironment(abc.ABC):
@@ -47,9 +55,9 @@ class EmbodiedEnvironment(abc.ABC):
     def add_object(
         self,
         name: str,
-        position: VectorXYZ = (0.0, 0.0, 0.0),
-        rotation: QuaternionWXYZ = (1.0, 0.0, 0.0, 0.0),
-        scale: VectorXYZ = (1.0, 1.0, 1.0),
+        position: VectorXYZ | None = None,
+        rotation: QuaternionWXYZ | None = None,
+        scale: VectorXYZ | None = None,
         semantic_id: SemanticID | None = None,
         primary_target_object: ObjectID | None = None,
     ) -> ObjectID:
@@ -57,10 +65,10 @@ class EmbodiedEnvironment(abc.ABC):
 
         Args:
             name: The name of the object to add.
-            position: The initial absolute position of the object.
+            position: The initial absolute position of the object. Defaults to None.
             rotation: The initial rotation WXYZ quaternion of the object. Defaults to
-                (1,0,0,0).
-            scale: The scale of the object to add. Defaults to (1,1,1).
+                None.
+            scale: The scale of the object to add. Defaults to None.
             semantic_id: Optional override for the object semantic ID. Defaults to None.
             primary_target_object: The ID of the primary target object. If not None, the
                 added object will be positioned so that it does not obscure the initial
@@ -68,18 +76,16 @@ class EmbodiedEnvironment(abc.ABC):
                 guarantee). Used when adding multiple objects. Defaults to None.
 
         Returns:
-            The ID of the added object.
+            The ObjectID of the object added to the environment.
         """
         pass
 
     @abc.abstractmethod
-    def step(self, actions: Sequence[Action]) -> dict[Any, dict]:
-        """Apply the given actions to the environment.
-
-        Args:
-            actions: The actions to apply to the environment.
+    def step(self, action: Action) -> tuple[Observations, ProprioceptiveState]:
+        """Apply the given action to the environment.
 
         Returns:
+            Tuple of observations and proprioceptive state.
             The current observations and other environment information (i.e. sensor
             pose) after the actions are applied.
 

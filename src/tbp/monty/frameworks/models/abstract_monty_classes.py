@@ -10,8 +10,48 @@
 from __future__ import annotations
 
 import abc
+from typing import Any, Dict, NewType
+
+import numpy as np
+import numpy.typing as npt
 
 from tbp.monty.frameworks.models.states import GoalState
+
+Modality = NewType("Modality", str)
+"""Unique identifier for a modality."""
+
+
+class SensorObservations(Dict[Modality, npt.NDArray[Any]]):
+    """Observations from a sensor."""
+
+    rgba: npt.NDArray[np.uint8]
+    depth: npt.NDArray[np.float32]
+    semantic: npt.NDArray[np.int_]
+    semantic_3d: npt.NDArray[np.int_]
+    sensor_frame_data: npt.NDArray[np.int_]
+    world_camera: npt.NDArray[np.float64]
+    pixel_loc: npt.NDArray[np.float64]
+    raw: npt.NDArray[np.uint8]
+
+
+SensorID = NewType("SensorID", str)
+"""Unique identifier for a sensor."""
+
+
+class AgentObservations(Dict[SensorID, SensorObservations]):
+    """Observations from an agent."""
+
+    pass
+
+
+AgentID = NewType("AgentID", str)
+"""Unique identifier for an agent."""
+
+
+class Observations(Dict[AgentID, AgentObservations]):
+    """Observations from the environment."""
+
+    pass
 
 
 class Monty(metaclass=abc.ABCMeta):
