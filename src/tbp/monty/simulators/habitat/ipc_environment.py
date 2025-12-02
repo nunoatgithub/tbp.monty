@@ -106,10 +106,14 @@ def deserialize_obs_and_state(
             if pb_sensor_obs.HasField("raw"):
                 sensor_obs.raw = np.frombuffer(pb_sensor_obs.raw)
             if pb_sensor_obs.HasField("rgba"):
+                # NOTE: Resolution is hardcoded to (64, 64) to match default sensor config
+                # TODO: Make resolution dynamic based on actual sensor configuration
                 sensor_obs.rgba = np.frombuffer(
                     pb_sensor_obs.rgba, dtype=np.uint8
                 ).reshape((64, 64, 4))
             if pb_sensor_obs.HasField("depth"):
+                # NOTE: Resolution is hardcoded to (64, 64) to match default sensor config
+                # TODO: Make resolution dynamic based on actual sensor configuration
                 sensor_obs.depth = np.frombuffer(
                     pb_sensor_obs.depth, dtype=np.float32
                 ).reshape((64, 64))

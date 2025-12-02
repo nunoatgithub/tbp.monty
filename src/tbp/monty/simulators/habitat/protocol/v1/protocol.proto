@@ -118,7 +118,7 @@ message TurnLeftAction {
 
 message TurnRightAction {
   string agent_id = 1;
-  double rotation_degrees = 3;
+  double rotation_degrees = 2;
 }
 
 message StepRequest {

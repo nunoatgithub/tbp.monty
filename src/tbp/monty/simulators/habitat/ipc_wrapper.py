@@ -251,9 +251,20 @@ def habitat_sim_process(request_queue: Queue, response_queue: Queue, config: dic
             else:
                 logger.error(f"Unknown operation type: {op_type}")
                 
+        except KeyboardInterrupt:
+            logger.info("Subprocess received keyboard interrupt, shutting down")
+            break
+        except EOFError:
+            logger.warning("Request queue closed, shutting down subprocess")
+            break
         except Exception as e:
             logger.error(f"Error in habitat_sim_process: {e}", exc_info=True)
-            response_queue.put(("error", str(e)))
+            # Send error response back to main process
+            try:
+                error_response = {"error": str(e), "type": type(e).__name__}
+                response_queue.put(("error", str(error_response)))
+            except Exception:
+                pass  # If we can't send the error, just log and continue
     
     logger.info("HabitatSim subprocess terminating")
 
@@ -439,7 +450,11 @@ class HabitatIPCWrapper:
         """Remove all objects from the simulator."""
         request = protocol_pb2.RemoveAllObjectsRequest()
         self.request_queue.put(("remove_all_objects", request.SerializeToString()))
-        op_type, response_bytes = self.response_queue.get()
+        try:
+            op_type, response_bytes = self.response_queue.get(timeout=30)
+        except Exception as e:
+            logger.error(f"Timeout or error waiting for response: {e}")
+            raise
         response = protocol_pb2.RemoveAllObjectsResponse()
         response.ParseFromString(response_bytes)
         return response
@@ -484,7 +499,11 @@ class HabitatIPCWrapper:
             request.primary_target_object = primary_target_object
         
         self.request_queue.put(("add_object", request.SerializeToString()))
-        op_type, response_bytes = self.response_queue.get()
+        try:
+            op_type, response_bytes = self.response_queue.get(timeout=30)
+        except Exception as e:
+            logger.error(f"Timeout or error waiting for add_object response: {e}")
+            raise
         response = protocol_pb2.AddObjectResponse()
         response.ParseFromString(response_bytes)
         return response
@@ -499,7 +518,11 @@ class HabitatIPCWrapper:
             StepResponse with observations and proprioceptive state
         """
         self.request_queue.put(("step", action_request.SerializeToString()))
-        op_type, response_bytes = self.response_queue.get()
+        try:
+            op_type, response_bytes = self.response_queue.get(timeout=30)
+        except Exception as e:
+            logger.error(f"Timeout or error waiting for step response: {e}")
+            raise
         response = protocol_pb2.StepResponse()
         response.ParseFromString(response_bytes)
         return response
@@ -512,7 +535,11 @@ class HabitatIPCWrapper:
         """
         request = protocol_pb2.ResetRequest()
         self.request_queue.put(("reset", request.SerializeToString()))
-        op_type, response_bytes = self.response_queue.get()
+        try:
+            op_type, response_bytes = self.response_queue.get(timeout=30)
+        except Exception as e:
+            logger.error(f"Timeout or error waiting for reset response: {e}")
+            raise
         response = protocol_pb2.ResetResponse()
         response.ParseFromString(response_bytes)
         return response
