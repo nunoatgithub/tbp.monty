@@ -11,5 +11,7 @@
 from .actions import *
 from .actuator import *
 from .agents import *
+from .ipc_environment import *
+from .ipc_wrapper import *
 from .sensors import *
 from .simulator import *
