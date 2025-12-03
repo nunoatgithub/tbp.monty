@@ -43,22 +43,24 @@ class HabitatServer(Simulator):
             request_msg = protocol_pb2.RequestMessage().ParseFromString(request_msg_bytes)
 
             request = request_msg.WhichOneof("request")
-            if request == "removeAllObjectsReq":
+            if request == "init_request":
+                response_msg = self._init(request_msg.init_request)
+            if request == "remove_all_objects_req":
                 response_msg = self._remove_all_objects()
-            elif request == "addObjectReq":
-                response_msg = self._add_objects(request_msg.addObjectReq)
-            elif request == "applyActionsReq":
-                response_msg = self._apply_actions(request_msg.applyActionsReq)
-            elif request == "proprioceptiveStateReq":
+            elif request == "add_object_req":
+                response_msg = self._add_objects(request_msg.add_object_req)
+            elif request == "apply_actions_req":
+                response_msg = self._apply_actions(request_msg.apply_actions_req)
+            elif request == "proprioceptive_state_req":
                 response_msg = self._proprioceptive_state()
-            elif request == "resetReq":
+            elif request == "reset_req":
                 response_msg = self._reset()
-            else:
+            else: # request == "close_req"
                 response_msg = self._close()
 
             self.transport.send_response(response_msg.SerializeToString())
 
-    def init(self, request: protocol_pb2.InitRequest) -> protocol_pb2.ResponseMessage:
+    def _init(self, request: protocol_pb2.InitRequest) -> protocol_pb2.ResponseMessage:
 
         habitat_sim_config_name = request.config_name
         habitat_sim_config = self._load_config(habitat_sim_config_name)
