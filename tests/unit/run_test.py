@@ -31,7 +31,7 @@ import numpy as np
 from omegaconf import OmegaConf
 
 from tbp.monty.frameworks.run import main
-from tbp.monty.simulators.habitat import SingleSensorAgent
+from tbp.monty.simulators.habitat_ipc.server import SingleSensorAgent
 
 DATASET_LEN = 1000
 TRAIN_EPOCHS = 2
@@ -78,7 +78,9 @@ class MontyRunTest(unittest.TestCase):
         self.mock_agent = mock_agent_class.return_value
         self.mock_agent.agent_config = camera.get_spec()
         self.mock_agent.scene_node = mock.Mock(
-            rotation=mn.Quaternion.zero_init(), node_sensors={}
+            rotation=mn.Quaternion.zero_init(),
+            translation=mn.Vector3(0.0, 0.0, 0.0),
+            node_sensors={}
         )
         mock_sim_class = sim_patch.start()
         self.mock_sim = mock_sim_class.return_value
@@ -87,10 +89,10 @@ class MontyRunTest(unittest.TestCase):
             self.mock_agent if agent_idx == 0 else None
         )
         self.mock_sim.reset.return_value = {
-            0: {"agent_id_0.depth": np.random.rand(64, 64, 1)}
+            0: {"sensor_id_0.depth": np.random.rand(64, 64, 1)}
         }
         self.mock_sim.get_sensor_observations.side_effect = [
-            {0: {"agent_id_0.depth": obs}} for obs in FAKE_OBS
+            {0: {"sensor_id_0.depth": obs}} for obs in FAKE_OBS
         ]
 
         with hydra.initialize(version_base=None, config_path="../../conf"):

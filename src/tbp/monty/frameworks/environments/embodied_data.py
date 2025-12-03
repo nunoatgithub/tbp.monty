@@ -502,7 +502,7 @@ class InformedEnvironmentInterface(EnvironmentInterfacePerObject):
 
     def pre_episode(self):
         super().pre_episode()
-        if self.env._agents[0].action_space_type != "surface_agent":
+        if self.env.action_space_type != "surface_agent":
             on_target_object = self.get_good_view_with_patch_refinement()
             if self.num_distractors == 0:
                 # Only perform this check if we aren't doing multi-object experiments.
@@ -664,11 +664,11 @@ class InformedEnvironmentInterface(EnvironmentInterfacePerObject):
         set_agent_pose = SetAgentPose(
             agent_id=self.motor_system._policy.agent_id,
             location=target_loc,
-            rotation_quat=target_np_quat,
+            rotation_quat=tuple(qt.as_float_array(target_np_quat)),
         )
         set_sensor_rotation = SetSensorRotation(
             agent_id=self.motor_system._policy.agent_id,
-            rotation_quat=qt.one,
+            rotation_quat=tuple(qt.as_float_array(qt.one)),
         )
         self._observation, proprioceptive_state = self.step(
             [set_agent_pose, set_sensor_rotation]
@@ -756,13 +756,13 @@ class InformedEnvironmentInterface(EnvironmentInterfacePerObject):
         set_agent_pose = SetAgentPose(
             agent_id=self.motor_system._policy.agent_id,
             location=pre_jump_state.position,
-            rotation_quat=pre_jump_state.rotation,
+            rotation_quat=tuple(qt.as_float_array(pre_jump_state.rotation)),
         )
         # All sensors are updated globally by actions, and are therefore
         # identical
         set_sensor_rotation = SetSensorRotation(
             agent_id=self.motor_system._policy.agent_id,
-            rotation_quat=pre_jump_state.sensors[first_sensor].rotation,
+            rotation_quat=tuple(qt.as_float_array(pre_jump_state.sensors[first_sensor].rotation)),
         )
         self._observation, proprioceptive_state = self.step(
             [set_agent_pose, set_sensor_rotation]

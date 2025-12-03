@@ -14,7 +14,7 @@ from habitat_sim.agent import ActionSpec, ActuationSpec
 
 from tbp.monty.frameworks.agents import AgentID
 from tbp.monty.frameworks.sensors import SensorID
-from tbp.monty.simulators.habitat import HabitatAgent
+from tbp.monty.simulators.habitat_ipc.server import HabitatAgent
 
 from .config import DIGIT, TactoSensorSpec
 from .sensors import TactoSensor
