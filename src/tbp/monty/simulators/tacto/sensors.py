@@ -21,7 +21,7 @@ from dataclasses import dataclass, field
 import numpy as np
 from habitat_sim.sensor import CameraSensorSpec, SensorSpec, SensorType
 
-from tbp.monty.simulators.habitat import SensorConfig
+from tbp.monty.simulators.habitat_ipc.server import SensorConfig
 from tbp.monty.simulators.tacto import DIGIT, TactoSensorSpec
 
 __all__ = ["TactoSensor"]

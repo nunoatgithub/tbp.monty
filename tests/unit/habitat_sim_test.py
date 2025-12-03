@@ -40,7 +40,7 @@ from tbp.monty.frameworks.actions.actions import (
     SetYaw,
     TurnLeft,
 )
-from tbp.monty.simulators.habitat import (
+from tbp.monty.simulators.habitat_ipc.server import (
     PRIMITIVE_OBJECT_TYPES,
     HabitatSim,
     SingleSensorAgent,
@@ -546,7 +546,7 @@ class HabitatSimTest(unittest.TestCase):
                 )
 
                 set_sensor_rotation = SetSensorRotation(
-                    agent_id=agent_id, rotation_quat=expected_rot
+                    agent_id=agent_id, rotation_quat=tuple(qt.as_float_array(expected_rot))
                 )
                 sim.step([set_sensor_rotation])
                 states = sim.states
@@ -583,7 +583,7 @@ class HabitatSimTest(unittest.TestCase):
                 )
 
                 set_sensor_pose = SetSensorPose(
-                    agent_id=agent_id, location=np.zeros(3), rotation_quat=expected_rot
+                    agent_id=agent_id, location=np.zeros(3), rotation_quat=tuple(qt.as_float_array(expected_rot))
                 )
                 sim.step([set_sensor_pose])
                 states = sim.states
@@ -604,7 +604,7 @@ class HabitatSimTest(unittest.TestCase):
                 set_sensor_pose = SetSensorPose(
                     agent_id=agent_id,
                     location=expected_pos,
-                    rotation_quat=sensor_rot_initial,
+                    rotation_quat=tuple(qt.as_float_array(sensor_rot_initial)),
                 )
                 sim.step([set_sensor_pose])
                 states = sim.states
@@ -627,7 +627,7 @@ class HabitatSimTest(unittest.TestCase):
                 set_sensor_pose = SetSensorPose(
                     agent_id=agent_id,
                     location=expected_pos,
-                    rotation_quat=expected_rot,
+                    rotation_quat=tuple(qt.as_float_array(expected_rot)),
                 )
                 sim.step([set_sensor_pose])
                 states = sim.states
@@ -663,7 +663,7 @@ class HabitatSimTest(unittest.TestCase):
                 )
 
                 set_agent_pose = SetAgentPose(
-                    agent_id=agent_id, location=np.zeros(3), rotation_quat=expected_rot
+                    agent_id=agent_id, location=np.zeros(3), rotation_quat=tuple(qt.as_float_array(expected_rot))
                 )
                 sim.step([set_agent_pose])
                 states = sim.states
@@ -686,7 +686,7 @@ class HabitatSimTest(unittest.TestCase):
                 set_agent_pose = SetAgentPose(
                     agent_id=agent_id,
                     location=expected_pos,
-                    rotation_quat=sensor_rot_initial,
+                    rotation_quat=tuple(qt.as_float_array(sensor_rot_initial)),
                 )
                 sim.step([set_agent_pose])
                 states = sim.states
@@ -709,7 +709,7 @@ class HabitatSimTest(unittest.TestCase):
                 set_agent_pose = SetAgentPose(
                     agent_id=agent_id,
                     location=expected_pos,
-                    rotation_quat=expected_rot,
+                    rotation_quat=tuple(qt.as_float_array(expected_rot)),
                 )
                 sim.step([set_agent_pose])
                 states = sim.states

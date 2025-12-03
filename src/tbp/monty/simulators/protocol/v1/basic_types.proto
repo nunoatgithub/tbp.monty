@@ -1,0 +1,35 @@
+syntax = "proto3";
+package tbp.monty.simulators.protocol.v1;
+
+option go_package = "tbp/monty/simulators/protocol/v1;protocolv1";
+option java_package = "org.thousandbrains.monty.simulators.v1";
+option csharp_namespace = "ThousandBrains.Monty.Simulators.V1";
+
+// All linear units in meters, angles in radians.
+// Right-handed coordinate system.
+// Quaternions use w,x,y,z (scalar-first) ordering.
+
+message VectorXYZ {
+  double x = 1;
+  double y = 2;
+  double z = 3;
+}
+
+message Resolution {
+  int32 height = 1;
+  int32 width = 2;
+}
+
+message NumpyArray {
+    bytes data = 1;
+    string dtype = 2;
+    repeated int32 shape = 3;  // Array dimensions (e.g., [64, 64, 4] for RGBA)
+}
+
+message QuaternionWXYZ {
+  double w = 1;
+  double x = 2;
+  double y = 3;
+  double z = 4;
+}
+

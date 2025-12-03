@@ -140,14 +140,15 @@ class SetSensorPose(SceneNodeControl):
         # Note setting scene_node.translation applies an absolute location, not a
         # relative translation (here in agent-centric coordinates)
         scene_node.translation = mn.Vector3(
-            [
                 actuation_spec.amount[0][0],
                 actuation_spec.amount[0][1],
                 actuation_spec.amount[0][2],
-            ]
         )
 
-        magnum_quat = hab_utils.common.quat_to_magnum(actuation_spec.amount[1])
+        rotation = actuation_spec.amount[1]
+        imaginary = rotation[0]
+        real = mn.Vector3(rotation[1], rotation[2], rotation[3])
+        magnum_quat = mn.Quaternion(real, imaginary)
         scene_node.rotation = magnum_quat
 
 
@@ -163,7 +164,11 @@ class SetSensorRotation(SceneNodeControl):
     """
 
     def __call__(self, scene_node: SceneNode, actuation_spec: ActuationVecSpec) -> None:
-        magnum_quat = hab_utils.common.quat_to_magnum(actuation_spec.amount[0])
+
+        rotation = actuation_spec.amount[0]
+        imaginary = rotation[0]
+        real = mn.Vector3(rotation[1], rotation[2], rotation[3])
+        magnum_quat = mn.Quaternion(real, imaginary)
         scene_node.rotation = magnum_quat
 
 
@@ -183,14 +188,15 @@ class SetAgentPose(SceneNodeControl):
         # Note setting scene_node.translation applies an absolute location, not a
         # relative translation (here in global environmental coordinates)
         scene_node.translation = mn.Vector3(
-            [
                 actuation_spec.amount[0][0],
                 actuation_spec.amount[0][1],
                 actuation_spec.amount[0][2],
-            ]
         )
 
-        magnum_quat = hab_utils.common.quat_to_magnum(actuation_spec.amount[1])
+        rotation = actuation_spec.amount[1]
+        imaginary = rotation[0]
+        real = mn.Vector3(rotation[1], rotation[2], rotation[3])
+        magnum_quat = mn.Quaternion(real, imaginary)
         scene_node.rotation = magnum_quat
 
 

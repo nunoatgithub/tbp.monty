@@ -1,0 +1,45 @@
+syntax = "proto3";
+package tbp.monty.simulators.protocol.v1;
+
+import "tbp/monty/simulators/protocol/v1/basic_types.proto";
+
+option go_package = "tbp/monty/simulators/protocol/v1;protocolv1";
+option java_package = "org.thousandbrains.monty.simulators.v1";
+option csharp_namespace = "ThousandBrains.Monty.Simulators.V1";
+
+message HabitatAgentConfig {
+
+    message SingleSensorConfig {
+        string agent_id = 1;
+        string sensor_id = 2;
+        optional Resolution resolution = 3;
+        optional string action_space_type = 4;
+    }
+
+    message MultiSensorConfig {
+        string agent_id = 1;
+        repeated string sensor_ids = 2;
+        double height = 3;
+        VectorXYZ position = 4;
+        repeated Resolution resolutions = 5;
+        repeated VectorXYZ positions = 6;
+        repeated QuaternionWXYZ rotations = 7;
+        repeated bool semantics = 8;
+        repeated double zooms = 9;
+        optional string action_space_type = 10;
+    }
+
+    oneof config {
+        SingleSensorConfig single_sensor_cfg = 1;
+        MultiSensorConfig multi_sensor_cfg = 2;
+    }
+}
+
+message HabitatConfig {
+    HabitatAgentConfig agent_cfg = 1;
+    bytes pickle_object_cfgs = 2;
+    optional string scene_id = 3;
+    uint64 seed = 4;
+    optional string data_path = 5;
+}
+
