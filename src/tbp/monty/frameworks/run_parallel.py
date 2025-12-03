@@ -22,6 +22,7 @@ import numpy as np
 import pandas as pd
 import torch
 import torch.multiprocessing as mp
+from multiprocessing.pool import Pool
 import wandb
 from omegaconf import DictConfig, OmegaConf
 
@@ -54,6 +55,30 @@ RE_OPEN_LEFT = re.compile(r"^:(\d+)$")  # ":N"
 RE_OPEN_RIGHT = re.compile(r"^(\d+):$")  # "N:"
 RE_CLOSED = re.compile(r"^(\d+)\s*:\s*(\d+)$")  # "A:B"
 RE_SINGLE = re.compile(r"^\d+$")  # "N"
+
+
+class NoDaemonProcess(mp.Process):
+    """Process that is not daemonic, allowing it to spawn child processes."""
+
+    @property
+    def daemon(self):
+        """Always return False to allow spawning children."""
+        return False
+
+    @daemon.setter
+    def daemon(self, value):
+        """Ignore attempts to set daemon=True."""
+        pass
+
+
+class NoDaemonPool(Pool):
+    """Pool that uses non-daemon worker processes."""
+
+    def Process(self, *args, **kwds):
+        """Override to use NoDaemonProcess instead of regular Process."""
+        proc = super(NoDaemonPool, self).Process(*args, **kwds)
+        proc.__class__ = NoDaemonProcess
+        return proc
 
 
 def mv_files(filenames: Iterable[Path], outdir: Path):
@@ -598,7 +623,7 @@ def run_episodes_parallel(
         )
     print(f"Wandb setup took {time.time() - start_time} seconds")
     start_time = time.time()
-    with mp.Pool(num_parallel, maxtasksperchild=1) as p:
+    with NoDaemonPool(num_parallel, maxtasksperchild=1) as p:
         if train:
             # NOTE: since we don't use wandb logging for training right now
             # it is also not covered here. Might want to add that in the future.

@@ -318,7 +318,7 @@ class EvidenceLMTest(BaseGraphTest):
             exp.experiment_mode = ExperimentMode.TRAIN
             exp.model.set_experiment_mode("train")
             exp.pre_epoch()
-            exp.env._env.remove_all_objects()
+            exp.env.remove_all_objects()
             with self.assertRaises(ValueError) as error:
                 exp.pre_episode()
             self.assertEqual(
@@ -1248,7 +1248,7 @@ class EvidenceLMTest(BaseGraphTest):
             exp.experiment_mode = ExperimentMode.TRAIN
             exp.model.set_experiment_mode("train")
             exp.pre_epoch()
-            exp.env._env.remove_all_objects()
+            exp.env.remove_all_objects()
             with self.assertRaises(ValueError) as error:
                 exp.pre_episode()
             self.assertEqual(

@@ -24,7 +24,7 @@ import numpy as np
 from habitat_sim._ext.habitat_sim_bindings.geo import FRONT
 
 from tbp.monty.frameworks.actions.actions import LookDown, LookUp
-from tbp.monty.simulators.habitat import HabitatSim, SingleSensorAgent
+from tbp.monty.simulators.habitat_ipc.server import HabitatSim, SingleSensorAgent
 
 
 class HabitatSimTest(unittest.TestCase):

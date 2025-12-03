@@ -9,6 +9,7 @@
 # https://opensource.org/licenses/MIT..
 from __future__ import annotations
 
+import dataclasses
 import uuid
 from collections import defaultdict
 from typing import Tuple
@@ -23,7 +24,7 @@ from tbp.monty.frameworks.models.abstract_monty_classes import (
     AgentObservations,
 )
 from tbp.monty.frameworks.sensors import SensorID
-from tbp.monty.simulators.habitat.sensors import (
+from .sensors import (
     RGBDSensorConfig,
     SemanticSensorConfig,
     SensorConfig,
@@ -33,6 +34,7 @@ __all__ = [
     "HabitatAgent",
     "MultiSensorAgent",
     "SingleSensorAgent",
+    "AgentConfig",
 ]
 
 ActionSpaceName = Literal["absolute_only", "distant_agent", "surface_agent"]
@@ -40,6 +42,15 @@ Vector3 = Tuple[float, float, float]
 Quaternion = Tuple[float, float, float, float]
 Size = Tuple[int, int]
 
+class HabitatAgentArgs:
+    pass
+
+@dataclasses.dataclass
+class AgentConfig:
+    """Agent configuration used by :class:`HabitatEnvironment`."""
+
+    agent_type: type[HabitatAgent]
+    agent_args: dict | type[HabitatAgentArgs]
 
 class HabitatAgent:
     """Habitat agent wrapper.

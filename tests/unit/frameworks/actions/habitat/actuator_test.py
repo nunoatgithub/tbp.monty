@@ -42,7 +42,7 @@ from tbp.monty.frameworks.actions.actions import (
     TurnLeft,
     TurnRight,
 )
-from tbp.monty.simulators.habitat.actuator import (
+from tbp.monty.simulators.habitat_ipc.server.actuator import (
     HabitatActuator,
     InvalidActionName,
 )

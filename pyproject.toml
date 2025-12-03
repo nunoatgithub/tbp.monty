@@ -1,5 +1,9 @@
 [build-system]
-requires = ['setuptools >= 71.0.0']
+requires = [
+    'setuptools >= 71.0.0',
+    'grpcio-tools >= 1.62.0',
+    'protobuf >= 3.20.0, != 4.21.0, < 5',
+]
 build-backend = 'setuptools.build_meta'
 
 [project]
@@ -40,6 +44,8 @@ dependencies = [
     'tqdm', # imported via conda (conda-forge::tqdm)
     'typing-extensions',
     'wandb', # imported via conda (conda-forge::wandb)
+    'protobuf>=3.20.0,!=4.21.0,<5;python_version<"3.9"',  # Runtime dependency for protobuf serialization
+    'protobuf>=5.29.0;python_version>="3.9"',  # Runtime dependency for protobuf serialization
 ]
 description = 'Thousand Brains Project Monty'
 dynamic = ['version']
@@ -306,7 +312,8 @@ namespaces = true
 
 [tool.setuptools.package-data]
 # habitat-sim resources
-'tbp.monty.simulators.resources' = ['*.json', '*.yml', '*.txt']
+'tbp.monty.simulators.resources' = ['*.json', '*.yml', '*.txt', '*.glb']
+'tbp.monty.simulators.resources.tacto' = ['*.yml', '*.txt']
 
 [tool.uv]
 no-build-isolation-package = ["torch-scatter", "torch-sparse"]

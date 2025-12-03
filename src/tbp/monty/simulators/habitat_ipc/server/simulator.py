@@ -54,8 +54,8 @@ from tbp.monty.frameworks.models.motor_system_state import (
 )
 from tbp.monty.frameworks.sensors import SensorID
 from tbp.monty.simulators import resources
-from tbp.monty.simulators.habitat.actuator import HabitatActuator
-from tbp.monty.simulators.habitat.agents import HabitatAgent
+from .actuator import HabitatActuator
+from .agents import HabitatAgent
 
 __all__ = [
     "PRIMITIVE_OBJECT_TYPES",
@@ -587,7 +587,7 @@ class HabitatSim(HabitatActuator, Simulator):
         obs: Observations = defaultdict(dict)
         for agent_index, agent_obs in habitat_obs.items():
             agent = self._agents[agent_index]
-            agent_id = self._agents[agent_index].agent_id
+            agent_id = AgentID(self._agents[agent_index].agent_id)
             obs[agent_id] = agent.process_observations(agent_obs)
 
         return obs
@@ -609,7 +609,7 @@ class HabitatSim(HabitatActuator, Simulator):
                 )
 
             # Update agent/module state
-            agent_id = self._agents[agent_index].agent_id
+            agent_id = AgentID(self._agents[agent_index].agent_id)
             rotation = sim_utils.quat_from_magnum(agent_node.rotation)
             result[agent_id] = AgentState(
                 position=agent_node.translation,

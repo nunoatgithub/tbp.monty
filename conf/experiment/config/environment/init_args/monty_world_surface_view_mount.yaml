@@ -3,4 +3,4 @@ defaults:
   - agents/surface_and_view_finder@agents.agent_args
 
 agents:
-  agent_type: ${monty.class:tbp.monty.simulators.habitat.MultiSensorAgent}
+  agent_type: ${monty.class:tbp.monty.simulators.habitat_ipc.server.MultiSensorAgent}

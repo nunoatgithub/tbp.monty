@@ -1,7 +1,7 @@
 defaults:
   - init_args/patch_view_mount@env_init_args
 
-env_init_func: ${monty.class:tbp.monty.simulators.habitat.environment.HabitatEnvironment}
+env_init_func: ${monty.class:tbp.monty.simulators.habitat_ipc.client.environment.HabitatEnvironment}
 # TODO: Some values are hardcoded, should come from env_init_args[agents][0].agent_args
 transform:
   - _target_: tbp.monty.frameworks.environment_utils.transforms.MissingToMaxDepth
