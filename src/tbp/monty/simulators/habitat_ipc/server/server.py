@@ -15,7 +15,7 @@ from tbp.monty.simulators.protocol.v1 import protocol_pb2, habitat_pb2, basic_ty
 from tbp.monty.simulators.simulator import Simulator
 from .agents import HabitatAgent, SingleSensorAgent, MultiSensorAgent
 from .simulator import HabitatSim
-from ..transport import Transport
+from ..transport import Transport, ShmRpcTransport, QueueBasedTransport
 
 
 @dataclass
