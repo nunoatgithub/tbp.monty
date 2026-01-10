@@ -10,22 +10,24 @@
 from __future__ import annotations
 
 import multiprocessing
+from pathlib import Path
+from time import sleep
 from typing import TYPE_CHECKING, Sequence
 
 import quaternion
 
 from tbp.monty.frameworks.actions.actions import Action
-from tbp.monty.frameworks.environments.embodied_environment import (
-    EmbodiedEnvironment,
+from tbp.monty.frameworks.environments.environment import (
     ObjectID,
     QuaternionWXYZ,
     SemanticID,
+    SimulatedObjectEnvironment,
     VectorXYZ,
 )
 from tbp.monty.frameworks.models.abstract_monty_classes import Observations
 from tbp.monty.frameworks.models.motor_system_state import ProprioceptiveState
 from tbp.monty.simulators.habitat_ipc.server.server import HabitatServer
-from tbp.monty.simulators.habitat_ipc.transport import QueueBasedTransport
+from tbp.monty.simulators.habitat_ipc.transport import ShmRpcTransport
 from .client import HabitatClient
 
 if TYPE_CHECKING:
@@ -36,7 +38,7 @@ __all__ = [
 ]
 
 
-class HabitatEnvironment(EmbodiedEnvironment):
+class HabitatEnvironment(SimulatedObjectEnvironment):
     """habitat-sim environment compatible with Monty.
 
     Attributes:
@@ -69,12 +71,14 @@ class HabitatEnvironment(EmbodiedEnvironment):
     ):
         super().__init__()
 
-        transport = QueueBasedTransport()
+        transport = ShmRpcTransport()
 
         self._habitat_server = HabitatServer(transport)
-        ctx = multiprocessing.get_context("fork")
+        ctx = multiprocessing.get_context("spawn")
         self._server_process = ctx.Process(target=self._habitat_server.start, daemon=True)
         self._server_process.start()
+
+        sleep(10)
 
         self._habitat_client = HabitatClient(transport)
 

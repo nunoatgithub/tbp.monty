@@ -18,6 +18,7 @@ from pathlib import Path
 
 import hydra
 from omegaconf import OmegaConf
+from shm_rpc_bridge.transport.transport_chooser import SharedMemoryTransport
 from unittest_parametrize import ParametrizedTestCase, param, parametrize
 
 EXPERIMENT_DIR = Path(__file__).parent.parent.parent / "conf" / "experiment"

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 import pickle
 import traceback
 from dataclasses import dataclass, asdict, is_dataclass
@@ -16,7 +17,6 @@ from tbp.monty.simulators.simulator import Simulator
 from .agents import HabitatAgent, SingleSensorAgent, MultiSensorAgent
 from .simulator import HabitatSim
 from ..transport import Transport
-
 
 @dataclass
 class HabitatSimConfig:
@@ -36,6 +36,13 @@ class HabitatServer(Simulator):
             self.transport.close()
 
     def start(self) -> None:
+
+        # from shm_rpc_bridge import get_logger
+        # file_handler = logging.FileHandler("habitat_ipc.log")
+        # file_handler.setFormatter(logging.Formatter("%(asctime)s - %(process)s - %(name)s - %(levelname)s: %(message)s"))
+        # shm_logger = get_logger()
+        # shm_logger.setLevel(logging.DEBUG)
+        # shm_logger.addHandler(file_handler)
 
         self.transport.start()
         while True:

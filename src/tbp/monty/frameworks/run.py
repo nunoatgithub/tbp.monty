@@ -55,6 +55,13 @@ def main(cfg: DictConfig):
         os.environ["MAGNUM_LOG"] = "quiet"
         os.environ["HABITAT_SIM_LOG"] = "quiet"
 
+    # from shm_rpc_bridge import get_logger
+    # file_handler = logging.FileHandler("rpc.log")
+    # file_handler.setFormatter(
+    #     logging.Formatter("%(asctime)s - %(process)s - %(name)s - %(levelname)s: %(message)s"))
+    # get_logger().addHandler(file_handler)
+    # get_logger().setLevel(logging.DEBUG)
+
     print_config(cfg)
     register_resolvers()
 
@@ -66,3 +73,4 @@ def main(cfg: DictConfig):
         experiment.run()
 
     logger.info(f"Done running {experiment} in {time.time() - start_time} seconds")
+    # file_handler.flush()

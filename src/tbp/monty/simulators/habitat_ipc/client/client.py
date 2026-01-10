@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 import pickle
 from typing import Iterable, Sequence, Tuple
 
@@ -11,9 +12,9 @@ from tbp.monty.frameworks.actions.actions import Action, LookDown, LookUp, MoveF
     SetSensorRotation, SetAgentPose, SetAgentPitch, OrientVertical, \
     OrientHorizontal, MoveTangentially, SetSensorPitch
 from tbp.monty.frameworks.agents import AgentID
-from tbp.monty.frameworks.environments.embodied_environment import (ObjectInfo, ObjectID,
-                                                                    SemanticID, \
-                                                                    VectorXYZ, QuaternionWXYZ)
+from tbp.monty.frameworks.environments.environment import (ObjectInfo, ObjectID,
+                                                           SemanticID, \
+                                                           VectorXYZ, QuaternionWXYZ)
 from tbp.monty.frameworks.models.abstract_monty_classes import Observations, AgentObservations, \
     SensorObservations
 from tbp.monty.frameworks.models.motor_system_state import ProprioceptiveState, SensorState, \
@@ -25,6 +26,13 @@ from tbp.monty.simulators.simulator import Simulator
 
 Resolution = Tuple[int, int]
 
+from shm_rpc_bridge import get_logger
+
+# file_handler = logging.FileHandler("habitat_ipc.log")
+# file_handler.setFormatter(logging.Formatter("%(asctime)s - %(process)s - %(name)s - %(levelname)s: %(message)s"))
+# shm_logger = get_logger()
+# shm_logger.setLevel(logging.DEBUG)
+# shm_logger.addHandler(file_handler)
 
 class HabitatClient(Simulator):
 
