@@ -109,6 +109,11 @@ future_work_widget_tool = [
 print_version_tool = [
     'semver'
 ]
+rag_tool = [
+    'openai>=1.0.0',
+    'duckdb>=0.10.0',
+    'python-dotenv>=1.0.0',
+]
 
 [project.urls]
 Homepage = 'https://thousandbrainsproject.org'
