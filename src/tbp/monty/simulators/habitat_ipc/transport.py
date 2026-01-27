@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import secrets
 from multiprocessing import Queue
 from typing import Protocol
 
@@ -32,9 +31,9 @@ class Transport(Protocol):
 
 class ShmRpcTransport(Transport):
 
-    def __init__(self):
+    def __init__(self, name : str):
         self.shm_transport: SharedMemoryTransport | None = None
-        self._name = secrets.token_hex(5)
+        self._name = name
         self._buffer_size = 750_000
         self._timeout = 300.0
 
@@ -46,7 +45,7 @@ class ShmRpcTransport(Transport):
         )
 
     def connect(self) -> ShmRpcTransport:
-        transport = ShmRpcTransport()
+        transport = ShmRpcTransport(self._name)
         transport.shm_transport = SharedMemoryTransport.open(
             self._name,
             self._buffer_size,
@@ -101,5 +100,3 @@ class QueueBasedTransport(Transport):
             self.to_habitat.close()
         if self.from_habitat is not None:
             self.from_habitat.close()
-
-

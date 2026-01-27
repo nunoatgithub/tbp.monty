@@ -10,10 +10,10 @@ from __future__ import annotations
 
 import pytest
 
-pytest.importorskip(
-    "habitat_sim",
-    reason="Habitat Sim optional dependency not installed.",
-)
+#pytest.importorskip(
+#    "habitat_sim",
+#    reason="Habitat Sim optional dependency not installed.",
+#)
 
 import tempfile
 import unittest

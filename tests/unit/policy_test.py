@@ -11,8 +11,8 @@
 import pytest
 
 pytest.importorskip(
-    "habitat_sim",
-    reason="Habitat Sim optional dependency not installed.",
+   "habitat_sim",
+   reason="Habitat Sim optional dependency not installed.",
 )
 import copy
 import shutil

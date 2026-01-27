@@ -21,10 +21,10 @@ from tbp.monty.frameworks.models.evidence_matching.resampling_hypotheses_updater
     ResamplingHypothesesUpdater,
 )
 
-pytest.importorskip(
-    "habitat_sim",
-    reason="Habitat Sim optional dependency not installed.",
-)
+#pytest.importorskip(
+#    "habitat_sim",
+#    reason="Habitat Sim optional dependency not installed.",
+#)
 
 from unittest import TestCase
 

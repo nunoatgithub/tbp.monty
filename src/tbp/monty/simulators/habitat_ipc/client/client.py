@@ -44,17 +44,11 @@ class HabitatClient(Simulator):
         if hasattr(self, 'transport') and self.transport is not None:
             self.transport.close()
 
-    # def init(self, config_name: str):
-    #     init_request = protocol_pb2.InitRequest(config_name=config_name)
-    #     request_msg = protocol_pb2.RequestMessage(init_request=init_request)
-    #     self.transport.send_request(request_msg.SerializeToString())
-    #     self.transport.receive_response()
-
     def init(self, agent_cfg: dict, object_cfgs: list[dict] | None, scene_id: str | None, seed: int,
              data_path: str | None):
 
         pb_agent_cfg = self._agent_cfg_to_proto(agent_cfg)
-        pickle_object_cfgs = pickle.dumps(object_cfgs)
+        pickle_object_cfgs = pickle.dumps(object_cfgs, protocol=5) # python 3.8 compatible
         habitat_cfg = habitat_pb2.HabitatConfig(
             agent_cfg=pb_agent_cfg,
             pickle_object_cfgs=pickle_object_cfgs,
