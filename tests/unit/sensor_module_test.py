@@ -10,10 +10,10 @@
 import hydra
 import pytest
 
-pytest.importorskip(
-    "habitat_sim",
-    reason="Habitat Sim optional dependency not installed.",
-)
+#pytest.importorskip(
+#    "habitat_sim",
+#    reason="Habitat Sim optional dependency not installed.",
+#)
 
 import shutil
 import tempfile

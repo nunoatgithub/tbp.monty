@@ -22,12 +22,21 @@ def agent_id_resolver(agent_id: str) -> AgentID:
     return AgentID(agent_id)
 
 
+class Empty:
+    def __init__(self, *args, **kwargs):
+        pass
+
 def monty_class_resolver(class_name: str) -> type:
     """Returns a class object by fully qualified path.
 
     TODO: This is an interim solution to retrieve my_class in
       the my_class(**my_args) pattern.
     """
+
+    # this allows a client configuration to be built without the habitat server modules
+    if "server" in class_name:
+        return Empty
+
     parts = class_name.split(".")
     module = ".".join(parts[:-1])
     klass = parts[-1]

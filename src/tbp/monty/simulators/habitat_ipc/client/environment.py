@@ -9,9 +9,9 @@
 # https://opensource.org/licenses/MIT.
 from __future__ import annotations
 
-import multiprocessing
+import secrets
+import subprocess
 from pathlib import Path
-from time import sleep
 from typing import TYPE_CHECKING, Sequence
 
 import quaternion
@@ -26,7 +26,6 @@ from tbp.monty.frameworks.environments.environment import (
 )
 from tbp.monty.frameworks.models.abstract_monty_classes import Observations
 from tbp.monty.frameworks.models.motor_system_state import ProprioceptiveState
-from tbp.monty.simulators.habitat_ipc.server.server import HabitatServer
 from tbp.monty.simulators.habitat_ipc.transport import ShmRpcTransport
 from .client import HabitatClient
 
@@ -49,18 +48,6 @@ class HabitatEnvironment(SimulatedObjectEnvironment):
         data_path: Path to the dataset.
     """
 
-    # def __init__(
-    #     self,
-    #     config_name: str,
-    # ):
-    #     super().__init__()
-    #     self._habitat_server = HabitatServer(QueueBasedTransport())
-    #     server_process = multiprocessing.Process(target=self._habitat_server.start)
-    #     server_process.start()
-    #
-    #     self._habitat_client = HabitatClient(self._habitat_server.transport)
-    #     self._habitat_client.init(config_name)
-
     def __init__(
         self,
         agents: dict,
@@ -71,14 +58,26 @@ class HabitatEnvironment(SimulatedObjectEnvironment):
     ):
         super().__init__()
 
-        transport = ShmRpcTransport()
+        channel_name = secrets.token_hex(5)
 
-        self._habitat_server = HabitatServer(transport)
-        ctx = multiprocessing.get_context("spawn")
-        self._server_process = ctx.Process(target=self._habitat_server.start, daemon=True)
-        self._server_process.start()
+        import os
 
-        sleep(10)
+        # set this env var to the conda where you have installed the 3.8 version of monty
+        # normally /home/<you>/miniconda3/envs/<env-name>/bin/python
+        py38 = os.environ.get("TBP_HABITAT_PY38", "python")
+        self._server_process = subprocess.Popen(
+            [
+                py38,
+                "-m",
+                "tbp.monty.simulators.habitat_ipc.server.launch",
+                "--channel-name",
+                channel_name,
+            ],
+            stdout=None,
+            stderr=None,
+        )
+
+        transport = ShmRpcTransport(channel_name).connect()
 
         self._habitat_client = HabitatClient(transport)
 
@@ -87,7 +86,8 @@ class HabitatEnvironment(SimulatedObjectEnvironment):
         self.action_space_type = self._extract_action_space_type(agents)
 
     def __del__(self):
-        self._server_process.terminate()
+        if hasattr(self, "_server_process") and self._server_process is not None:
+            self._server_process.terminate()
 
     def add_object(
         self,

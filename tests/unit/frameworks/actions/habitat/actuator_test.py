@@ -15,8 +15,8 @@ import pytest
 from tbp.monty.frameworks.agents import AgentID
 
 pytest.importorskip(
-    "habitat_sim",
-    reason="Habitat Sim optional dependency not installed.",
+   "habitat_sim",
+   reason="Habitat Sim optional dependency not installed.",
 )
 
 import unittest

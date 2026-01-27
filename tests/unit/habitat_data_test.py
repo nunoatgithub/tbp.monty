@@ -16,8 +16,8 @@ from tbp.monty.frameworks.experiments.mode import ExperimentMode
 from tbp.monty.frameworks.sensors import SensorID
 
 pytest.importorskip(
-    "habitat_sim",
-    reason="Habitat Sim optional dependency not installed.",
+   "habitat_sim",
+   reason="Habitat Sim optional dependency not installed.",
 )
 
 import unittest

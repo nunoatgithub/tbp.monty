@@ -26,11 +26,9 @@ from tbp.monty.simulators.simulator import Simulator
 
 Resolution = Tuple[int, int]
 
-from shm_rpc_bridge import get_logger
-
 # file_handler = logging.FileHandler("habitat_ipc.log")
 # file_handler.setFormatter(logging.Formatter("%(asctime)s - %(process)s - %(name)s - %(levelname)s: %(message)s"))
-# shm_logger = get_logger()
+# shm_logger = logging.getLogger("shm_rpc_bridge")
 # shm_logger.setLevel(logging.DEBUG)
 # shm_logger.addHandler(file_handler)
 
@@ -44,17 +42,11 @@ class HabitatClient(Simulator):
         if hasattr(self, 'transport') and self.transport is not None:
             self.transport.close()
 
-    # def init(self, config_name: str):
-    #     init_request = protocol_pb2.InitRequest(config_name=config_name)
-    #     request_msg = protocol_pb2.RequestMessage(init_request=init_request)
-    #     self.transport.send_request(request_msg.SerializeToString())
-    #     self.transport.receive_response()
-
     def init(self, agent_cfg: dict, object_cfgs: list[dict] | None, scene_id: str | None, seed: int,
              data_path: str | None):
 
         pb_agent_cfg = self._agent_cfg_to_proto(agent_cfg)
-        pickle_object_cfgs = pickle.dumps(object_cfgs)
+        pickle_object_cfgs = pickle.dumps(object_cfgs, protocol=5) # python 3.8 compatible
         habitat_cfg = habitat_pb2.HabitatConfig(
             agent_cfg=pb_agent_cfg,
             pickle_object_cfgs=pickle_object_cfgs,

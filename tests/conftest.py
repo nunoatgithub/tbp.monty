@@ -18,15 +18,10 @@ def flush_logs_after_test(request):
     """Flush logs after each test to ensure spawned process logs are captured."""
     yield
     import logging
-    from shm_rpc_bridge import get_logger
     import sys
 
     # Flush all handlers to ensure logs from spawned processes are written
     for handler in logging.getLogger().handlers:
-        handler.flush()
-
-    logger = get_logger()
-    for handler in logger.handlers:
         handler.flush()
 
     sys.stdout.flush()
