@@ -52,6 +52,7 @@ class ZmqTransport(Transport):
         """Start as server: bind to IPC endpoint and wait for connections."""
         self.context = zmq.Context()
         self.socket = self.context.socket(zmq.REP)
+        self.socket.setsockopt(zmq.MAXMSGSIZE, 700_000)
         self.socket.bind(self._ipc_path)
 
     def connect(self) -> ZmqTransport:
@@ -59,56 +60,52 @@ class ZmqTransport(Transport):
         transport = ZmqTransport(self._channel_name)
         transport.context = zmq.Context()
         transport.socket = transport.context.socket(zmq.REQ)
+        transport.socket.setsockopt(zmq.MAXMSGSIZE, 700_000)
         
-        # Try to connect with retries for server startup
-        max_retries = 120
-        retry_delay = 1.0
-        
-        for attempt in range(max_retries):
+        """Block until server responds to ping or timeout expires."""
+        start = time.monotonic()
+        while True:
             try:
-                transport.socket.connect(transport._ipc_path)
-                # Set timeouts for send and receive operations
-                transport.socket.setsockopt(zmq.RCVTIMEO, 300000)  # 300 second timeout
-                transport.socket.setsockopt(zmq.SNDTIMEO, 300000)  # 300 second timeout
-                # Small delay to ensure connection is established
+                self.socket.send(b"ping", zmq.NOBLOCK)
+                reply = self.socket.recv()
+                if reply == b"pong":
+                    return transport
+            except zmq.Again:
+                if time.monotonic() - start > 120:
+                    raise RuntimeError(f"Server {self._channel_name} not responding")
                 time.sleep(0.1)
-                return transport
-            except zmq.ZMQError:
-                if attempt < max_retries - 1:
-                    time.sleep(retry_delay)
-                else:
-                    raise
 
     def send_request(self, data: bytes) -> None:
-        """Send request (client -> server)."""
         if self.socket is None:
-            msg = "Socket not initialized. Call connect() for client first."
+            msg = f"Socket {self._channel_name} not initialized. Call connect() for client first."
             raise RuntimeError(msg)
         self.socket.send(data)
 
     def receive_request(self) -> bytes:
-        """Receive request (server from client)."""
         if self.socket is None:
-            msg = "Socket not initialized. Call start() for server first."
+            msg = f"Socket {self._channel_name} not initialized. Call start() for server first."
             raise RuntimeError(msg)
-        return self.socket.recv()
+        msg = self.socket.recv()
+        if msg == b"ping":
+            # Respond to handshake and wait for next protocol message
+            self.socket.send(b"pong")
+            return self.socket.recv()
+        else:
+            return msg
 
     def send_response(self, data: bytes) -> None:
-        """Send response (server -> client)."""
         if self.socket is None:
             msg = "Socket not initialized. Call start() for server first."
             raise RuntimeError(msg)
         self.socket.send(data)
 
     def receive_response(self) -> bytes:
-        """Receive response (client from server)."""
         if self.socket is None:
             msg = "Socket not initialized. Call connect() for client first."
             raise RuntimeError(msg)
         return self.socket.recv()
 
     def close(self) -> None:
-        """Close the socket and context."""
         if self.socket is not None:
             self.socket.close()
             self.socket = None
@@ -118,10 +115,6 @@ class ZmqTransport(Transport):
 
 
 class ShmRpcTransport(Transport):
-    """Shared memory transport using shm-rpc-bridge.
-    
-    Original transport implementation using shared memory for IPC.
-    """
 
     def __init__(self, name: str):
         self.shm_transport: SharedMemoryTransport | None = None
@@ -130,7 +123,6 @@ class ShmRpcTransport(Transport):
         self._timeout = 300.0
 
     def start(self) -> None:
-        """Start as server: create shared memory transport."""
         self.shm_transport = SharedMemoryTransport.create(
             self._name,
             self._buffer_size,
@@ -138,7 +130,6 @@ class ShmRpcTransport(Transport):
         )
 
     def connect(self) -> ShmRpcTransport:
-        """Connect as client: open shared memory transport."""
         transport = ShmRpcTransport(self._name)
         transport.shm_transport = SharedMemoryTransport.open(
             self._name,
@@ -149,23 +140,18 @@ class ShmRpcTransport(Transport):
         return transport
 
     def send_request(self, data: bytes) -> None:
-        """Send request (client -> server)."""
         self.shm_transport.send_request(data)
 
     def receive_request(self) -> bytes:
-        """Receive request (server from client)."""
         return self.shm_transport.receive_request()
 
     def send_response(self, data: bytes) -> None:
-        """Send response (server -> client)."""
         self.shm_transport.send_response(data)
 
     def receive_response(self) -> bytes:
-        """Receive response (client from server)."""
         return self.shm_transport.receive_response()
 
     def close(self) -> None:
-        """Close the shared memory transport."""
         if self.shm_transport is not None:
             self.shm_transport.close()
 

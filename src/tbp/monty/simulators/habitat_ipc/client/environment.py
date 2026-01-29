@@ -27,7 +27,7 @@ from tbp.monty.frameworks.environments.environment import (
 )
 from tbp.monty.frameworks.models.abstract_monty_classes import Observations
 from tbp.monty.frameworks.models.motor_system_state import ProprioceptiveState
-from tbp.monty.simulators.habitat_ipc.transport import ZmqTransport
+from tbp.monty.simulators.habitat_ipc.transport import ZmqTransport, ShmRpcTransport
 from .client import HabitatClient
 
 if TYPE_CHECKING:
@@ -77,7 +77,7 @@ class HabitatEnvironment(SimulatedObjectEnvironment):
             stderr=None,
         )
 
-        transport = ZmqTransport(channel_name=channel_name).connect()
+        transport = ShmRpcTransport(channel_name).connect()
 
         self._habitat_client = HabitatClient(transport)
 
