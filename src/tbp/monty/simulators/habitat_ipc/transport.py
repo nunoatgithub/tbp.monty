@@ -5,6 +5,7 @@ from multiprocessing import Queue
 from typing import Protocol
 
 import zmq
+from shm_rpc_bridge.transport.transport_chooser import SharedMemoryTransport
 
 
 class Transport(Protocol):
@@ -114,6 +115,59 @@ class ZmqTransport(Transport):
         if self.context is not None:
             self.context.term()
             self.context = None
+
+
+class ShmRpcTransport(Transport):
+    """Shared memory transport using shm-rpc-bridge.
+    
+    Original transport implementation using shared memory for IPC.
+    """
+
+    def __init__(self, name: str):
+        self.shm_transport: SharedMemoryTransport | None = None
+        self._name = name
+        self._buffer_size = 750_000
+        self._timeout = 300.0
+
+    def start(self) -> None:
+        """Start as server: create shared memory transport."""
+        self.shm_transport = SharedMemoryTransport.create(
+            self._name,
+            self._buffer_size,
+            self._timeout
+        )
+
+    def connect(self) -> ShmRpcTransport:
+        """Connect as client: open shared memory transport."""
+        transport = ShmRpcTransport(self._name)
+        transport.shm_transport = SharedMemoryTransport.open(
+            self._name,
+            self._buffer_size,
+            self._timeout,
+            wait_for_creation=120.0
+        )
+        return transport
+
+    def send_request(self, data: bytes) -> None:
+        """Send request (client -> server)."""
+        self.shm_transport.send_request(data)
+
+    def receive_request(self) -> bytes:
+        """Receive request (server from client)."""
+        return self.shm_transport.receive_request()
+
+    def send_response(self, data: bytes) -> None:
+        """Send response (server -> client)."""
+        self.shm_transport.send_response(data)
+
+    def receive_response(self) -> bytes:
+        """Receive response (client from server)."""
+        return self.shm_transport.receive_response()
+
+    def close(self) -> None:
+        """Close the shared memory transport."""
+        if self.shm_transport is not None:
+            self.shm_transport.close()
 
 
 class QueueBasedTransport(Transport):
