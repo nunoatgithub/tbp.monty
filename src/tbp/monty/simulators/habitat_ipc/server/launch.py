@@ -8,11 +8,10 @@ from tbp.monty.simulators.habitat_ipc.transport import ZmqTransport
 
 def main() -> None:
     p = argparse.ArgumentParser()
-    p.add_argument("--port", type=int, default=5555)
-    p.add_argument("--host", default="127.0.0.1")
+    p.add_argument("--channel-name", required=True)
     args = p.parse_args()
 
-    transport = ZmqTransport(port=args.port, host=args.host)
+    transport = ZmqTransport(channel_name=args.channel_name)
     HabitatServer(transport).start()
 
 

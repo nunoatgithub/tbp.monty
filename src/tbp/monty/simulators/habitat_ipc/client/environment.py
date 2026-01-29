@@ -9,6 +9,8 @@
 # https://opensource.org/licenses/MIT.
 from __future__ import annotations
 
+import os
+import secrets
 import subprocess
 from pathlib import Path
 from typing import TYPE_CHECKING, Sequence
@@ -57,11 +59,8 @@ class HabitatEnvironment(SimulatedObjectEnvironment):
     ):
         super().__init__()
 
-        # Use a random port in the range 10000-20000 to avoid conflicts
-        import random
-        port = random.randint(10000, 20000)
-
-        import os
+        # Create unique channel identifier for this client-server pair
+        channel_name = secrets.token_hex(5)
 
         # set this env var to the conda where you have installed the 3.8 version of monty
         # normally /home/<you>/miniconda3/envs/<env-name>/bin/python
@@ -71,14 +70,14 @@ class HabitatEnvironment(SimulatedObjectEnvironment):
                 py38,
                 "-m",
                 "tbp.monty.simulators.habitat_ipc.server.launch",
-                "--port",
-                str(port),
+                "--channel-name",
+                channel_name,
             ],
             stdout=None,
             stderr=None,
         )
 
-        transport = ZmqTransport(port=port).connect()
+        transport = ZmqTransport(channel_name=channel_name).connect()
 
         self._habitat_client = HabitatClient(transport)
 
