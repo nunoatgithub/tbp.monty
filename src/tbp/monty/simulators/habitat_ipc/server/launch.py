@@ -3,7 +3,7 @@ from __future__ import annotations
 import argparse
 
 from tbp.monty.simulators.habitat_ipc.server.server import HabitatServer
-from tbp.monty.simulators.habitat_ipc.transport import ShmRpcTransport
+from tbp.monty.simulators.habitat_ipc.transport import ZmqTransport
 
 
 def main() -> None:
@@ -11,7 +11,7 @@ def main() -> None:
     p.add_argument("--channel-name", required=True)
     args = p.parse_args()
 
-    transport = ShmRpcTransport(args.channel_name)
+    transport = ZmqTransport(args.channel_name)
     HabitatServer(transport).start()
 
 

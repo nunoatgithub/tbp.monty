@@ -9,6 +9,7 @@
 # https://opensource.org/licenses/MIT.
 from __future__ import annotations
 
+import os
 import secrets
 import subprocess
 from pathlib import Path
@@ -26,7 +27,7 @@ from tbp.monty.frameworks.environments.environment import (
 )
 from tbp.monty.frameworks.models.abstract_monty_classes import Observations
 from tbp.monty.frameworks.models.motor_system_state import ProprioceptiveState
-from tbp.monty.simulators.habitat_ipc.transport import ShmRpcTransport
+from tbp.monty.simulators.habitat_ipc.transport import ZmqTransport, ShmRpcTransport
 from .client import HabitatClient
 
 if TYPE_CHECKING:
@@ -60,8 +61,6 @@ class HabitatEnvironment(SimulatedObjectEnvironment):
 
         channel_name = secrets.token_hex(5)
 
-        import os
-
         # set this env var to the conda where you have installed the 3.8 version of monty
         # normally /home/<you>/miniconda3/envs/<env-name>/bin/python
         py38 = os.environ.get("TBP_HABITAT_PY38", "python")
@@ -77,7 +76,7 @@ class HabitatEnvironment(SimulatedObjectEnvironment):
             stderr=None,
         )
 
-        transport = ShmRpcTransport(channel_name).connect()
+        transport = ZmqTransport(channel_name)
 
         self._habitat_client = HabitatClient(transport)
 
