@@ -1,9 +1,10 @@
 from __future__ import annotations
 
+import time
 from multiprocessing import Queue
 from typing import Protocol
 
-from shm_rpc_bridge.transport.transport_chooser import SharedMemoryTransport
+import zmq
 
 
 class Transport(Protocol):
@@ -29,46 +30,86 @@ class Transport(Protocol):
     def close(self) -> None:
         ...
 
-class ShmRpcTransport(Transport):
+class ZmqTransport(Transport):
+    """ZeroMQ-based transport for inter-process communication.
+    
+    Uses a REQ-REP pattern where:
+    - Server binds to a TCP port and receives requests
+    - Client connects to the server and sends requests
+    """
 
-    def __init__(self, name : str):
-        self.shm_transport: SharedMemoryTransport | None = None
-        self._name = name
-        self._buffer_size = 750_000
-        self._timeout = 300.0
+    def __init__(self, port: int = 5555, host: str = "127.0.0.1"):
+        self.context: zmq.Context | None = None
+        self.socket: zmq.Socket | None = None
+        self._port = port
+        self._host = host
+        self._is_server = False
 
     def start(self) -> None:
-        self.shm_transport = SharedMemoryTransport.create(
-            self._name,
-            self._buffer_size,
-            self._timeout
-        )
+        """Start as server: bind to port and wait for connections."""
+        self.context = zmq.Context()
+        self.socket = self.context.socket(zmq.REP)
+        self.socket.bind(f"tcp://{self._host}:{self._port}")
+        self._is_server = True
 
-    def connect(self) -> ShmRpcTransport:
-        transport = ShmRpcTransport(self._name)
-        transport.shm_transport = SharedMemoryTransport.open(
-            self._name,
-            self._buffer_size,
-            self._timeout,
-            wait_for_creation=120.0
-        )
+    def connect(self) -> ZmqTransport:
+        """Connect as client: connect to server."""
+        transport = ZmqTransport(self._port, self._host)
+        transport.context = zmq.Context()
+        transport.socket = transport.context.socket(zmq.REQ)
+        
+        # Try to connect with retries for server startup
+        max_retries = 120
+        retry_delay = 1.0
+        
+        for attempt in range(max_retries):
+            try:
+                transport.socket.connect(f"tcp://{self._host}:{self._port}")
+                # Test connection by setting a timeout
+                transport.socket.setsockopt(zmq.RCVTIMEO, 300000)  # 300 second timeout
+                transport.socket.setsockopt(zmq.SNDTIMEO, 300000)  # 300 second timeout
+                transport._is_server = False
+                return transport
+            except zmq.ZMQError:
+                if attempt < max_retries - 1:
+                    time.sleep(retry_delay)
+                else:
+                    raise
+        
         return transport
 
-    def send_request(self, data: bytes):
-        self.shm_transport.send_request(data)
+    def send_request(self, data: bytes) -> None:
+        """Send request (client -> server)."""
+        if self.socket is None:
+            raise RuntimeError("Socket not initialized")
+        self.socket.send(data)
 
     def receive_request(self) -> bytes:
-        return self.shm_transport.receive_request()
+        """Receive request (server from client)."""
+        if self.socket is None:
+            raise RuntimeError("Socket not initialized")
+        return self.socket.recv()
 
-    def send_response(self, data: bytes):
-        self.shm_transport.send_response(data)
+    def send_response(self, data: bytes) -> None:
+        """Send response (server -> client)."""
+        if self.socket is None:
+            raise RuntimeError("Socket not initialized")
+        self.socket.send(data)
 
     def receive_response(self) -> bytes:
-        return self.shm_transport.receive_response()
+        """Receive response (client from server)."""
+        if self.socket is None:
+            raise RuntimeError("Socket not initialized")
+        return self.socket.recv()
 
-    def close(self):
-        if self.shm_transport is not None:
-            self.shm_transport.close()
+    def close(self) -> None:
+        """Close the socket and context."""
+        if self.socket is not None:
+            self.socket.close()
+            self.socket = None
+        if self.context is not None:
+            self.context.term()
+            self.context = None
 
 
 class QueueBasedTransport(Transport):

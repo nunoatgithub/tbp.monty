@@ -37,13 +37,6 @@ class HabitatServer(Simulator):
 
     def start(self) -> None:
 
-        from shm_rpc_bridge import get_logger
-        file_handler = logging.FileHandler("habitat_ipc.log")
-        file_handler.setFormatter(logging.Formatter("%(asctime)s - %(process)s - %(name)s - %(levelname)s: %(message)s"))
-        shm_logger = get_logger()
-        shm_logger.setLevel(logging.DEBUG)
-        shm_logger.addHandler(file_handler)
-
         self.transport.start()
         while True:
             try:

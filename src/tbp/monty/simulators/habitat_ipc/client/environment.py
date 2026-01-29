@@ -9,7 +9,6 @@
 # https://opensource.org/licenses/MIT.
 from __future__ import annotations
 
-import secrets
 import subprocess
 from pathlib import Path
 from typing import TYPE_CHECKING, Sequence
@@ -26,7 +25,7 @@ from tbp.monty.frameworks.environments.environment import (
 )
 from tbp.monty.frameworks.models.abstract_monty_classes import Observations
 from tbp.monty.frameworks.models.motor_system_state import ProprioceptiveState
-from tbp.monty.simulators.habitat_ipc.transport import ShmRpcTransport
+from tbp.monty.simulators.habitat_ipc.transport import ZmqTransport
 from .client import HabitatClient
 
 if TYPE_CHECKING:
@@ -58,7 +57,9 @@ class HabitatEnvironment(SimulatedObjectEnvironment):
     ):
         super().__init__()
 
-        channel_name = secrets.token_hex(5)
+        # Use a random port in the range 10000-20000 to avoid conflicts
+        import random
+        port = random.randint(10000, 20000)
 
         import os
 
@@ -70,14 +71,14 @@ class HabitatEnvironment(SimulatedObjectEnvironment):
                 py38,
                 "-m",
                 "tbp.monty.simulators.habitat_ipc.server.launch",
-                "--channel-name",
-                channel_name,
+                "--port",
+                str(port),
             ],
             stdout=None,
             stderr=None,
         )
 
-        transport = ShmRpcTransport(channel_name).connect()
+        transport = ZmqTransport(port=port).connect()
 
         self._habitat_client = HabitatClient(transport)
 
